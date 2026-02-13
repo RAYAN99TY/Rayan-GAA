@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OP Launcher - 3D Mobile Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root { --p-red: #e61919; --mc-green: #3fb52d; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; background: #000; touch-action: none; }
+
+        /* --- 1. واجهة اللانشر (مطابقة للصورة) --- */
+        #launcher { width: 100%; height: 100%; background: #121212; color: white; display: flex; flex-direction: column; position: absolute; z-index: 10; }
+        .top-bar { padding: 15px; border-bottom: 1px solid #333; font-weight: bold; font-size: 18px; }
+        .top-bar span { color: var(--p-red); }
+        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid var(--p-red); }
+        .tab { flex: 1; text-align: center; padding: 12px; font-size: 12px; font-weight: bold; }
+        .tab.active { background: var(--p-red); clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%); }
+        .list-items { flex-grow: 1; overflow-y: auto; }
+        .item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; }
+        .item-icon { width: 35px; height: 35px; margin-right: 15px; background: #333; border-radius: 4px; display:flex; align-items:center; justify-content:center; }
+        .item-text b { display: block; font-size: 14px; }
+        .item-text span { font-size: 11px; color: #888; }
+        .bottom-nav { background: #111; padding: 10px; border-top: 1px solid #333; }
+        .ver { font-size: 11px; color: #888; margin-bottom: 5px; padding-left: 10px; }
+        .play-btn { width: 95%; height: 50px; background: var(--p-red); border: none; color: white; font-weight: bold; font-size: 18px; margin: 0 auto; display: block; cursor: pointer; }
+
+        /* --- 2. شاشة التحميل السوداء --- */
+        #loading-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20; cursor: none; }
+        .gray-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #333; color: white; padding: 25px 50px; border: 1px solid #555; text-align: center; font-size: 18px; }
+        #circle-cursor { position: absolute; width: 30px; height: 30px; border: 2px solid white; border-radius: 50%; background: rgba(255,255,255,0.2); pointer-events: none; z-index: 100; transform: translate(-50%, -50%); display: none; }
+
+        /* --- 3. قائمة ماين كرافت الرئيسية --- */
+        #mc-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://wallpaperaccess.com/full/1121345.jpg') center/cover; z-index: 30; }
+        .mc-right { position: absolute; right: 50px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; }
+        .mc-btn { width: 260px; padding: 18px; background: var(--mc-green); color: black; border: 4px solid #1e5e14; font-weight: bold; font-size: 1.2rem; text-align: center; cursor: pointer; border-radius: 4px; }
+
+        /* --- 4. العالم والتحكم (3D & Mojo Style) --- */
+        #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; }
+        .mobile-controls { position: absolute; bottom: 30px; left: 30px; display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 5px; z-index: 60; }
+        .ctrl-btn { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; }
+        .jump-btn { position: absolute; bottom: 30px; right: 30px; width: 70px; height: 70px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; z-index: 60; }
+    </style>
+</head>
+<body>
+
+    <div id="launcher">
+        <div class="top-bar">OP <span>Launcher</span></div>
+        <div class="nav-tabs"><div class="tab active">WIKI</div><div class="tab">WIKI</div><div class="tab">DISCORD</div></div>
+        <div class="list-items">
+            <div class="item"><div class="item-icon">⚙️</div><div class="item-text"><b>Custom Controls</b><span>تعديل أزرار التحكم</span></div></div>
+            <div class="item"><div class="item-icon">🖼️</div><div class="item-text"><b>Video and renderer</b><span>الدقة والمحرك</span></div></div>
+            <div class="item"><div class="item-icon">☕</div><div class="item-text"><b>Java Tweaks</b><span>تعديل الرام</span></div></div>
+        </div>
+        <div class="bottom-nav"><div class="ver">● Latest release (Java Edition)</div><button class="play-btn" onclick="goToLoading()">PLAY</button></div>
+    </div>
+
+    <div id="loading-screen" onmousemove="handleInput(event)" ontouchmove="handleInput(event)">
+        <div class="gray-box">جاري تشغيل ماين كرافت...</div>
+        <div id="circle-cursor"></div>
+    </div>
+
+    <div id="mc-menu">
+        <div class="mc-right">
+            <div class="mc-btn" onclick="start3DGame()">Singleplayer</div>
+            <div class="mc-btn">Multiplayer</div>
+            <div class="mc-btn" onclick="alert('Mods Loaded: Optifine, Forge, WorldEdit')">MODS</div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div class="mobile-controls">
+            <div></div><div class="ctrl-btn" id="btn-up">↑</div><div></div>
+            <div class="ctrl-btn" id="btn-left">←</div><div class="ctrl-btn">○</div><div class="ctrl-btn" id="btn-right">→</div>
+            <div></div><div class="ctrl-btn" id="btn-down">↓</div><div></div>
+        </div>
+        <div class="jump-btn" id="btn-jump">Jump</div>
+    </div>
+
+    <script>
+        // تتبع الماوس الدائري
+        function handleInput(e) {
+            const cursor = document.getElementById('circle-cursor');
+            let x = e.clientX || e.touches[0].clientX;
+            let y = e.clientY || e.touches[0].clientY;
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
+            cursor.style.display = 'block';
+        }
+
+        function goToLoading() {
+            document.getElementById('launcher').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('mc-menu').style.display = 'block';
+            }, 3000);
+        }
+
+        // --- محرك اللعبة 3D ---
+        function start3DGame() {
+            document.getElementById('mc-menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // إضاءة وعالم انفينتي
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 10, 7.5); scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            const planeGeo = new THREE.PlaneGeometry(1000, 1000);
+            const planeMat = new THREE.MeshPhongMaterial({ color: 0x3fb52d });
+            const ground = new THREE.Mesh(planeGeo, planeMat);
+            ground.rotation.x = -Math.PI/2; scene.add(ground);
+
+            // إضافة مكعبات عشوائية (أشجار/بيوت)
+            for(let i=0; i<100; i++) {
+                let box = new THREE.Mesh(new THREE.BoxGeometry(2,Math.random()*5+2,2), new THREE.MeshPhongMaterial({color: 0x8B4513}));
+                box.position.set(Math.random()*200-100, 0, Math.random()*200-100); scene.add(box);
+            }
+
+            camera.position.set(0, 5, 10);
+            let move = { fwd: false, bck: false, lft: false, rgt: false };
+
+            // ربط أزرار التحكم
+            const bind = (id, key) => {
+                const el = document.getElementById(id);
+                el.ontouchstart = () => move[key] = true;
+                el.ontouchend = () => move[key] = false;
+            };
+            bind('btn-up', 'fwd'); bind('btn-down', 'bck'); bind('btn-left', 'lft'); bind('btn-right', 'rgt');
+            document.getElementById('btn-jump').ontouchstart = () => { camera.position.y += 2; setTimeout(()=>camera.position.y=5, 200); };
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if(move.fwd) camera.translateZ(-0.5);
+                if(move.bck) camera.translateZ(0.5);
+                if(move.lft) camera.translateX(-0.5);
+                if(move.rgt) camera.translateX(0.5);
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>
